@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Special Journey | Happy Birthday</title>
+    
+    <!-- External Fonts & Libraries -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/canvas-confetti/1.6.0/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #050505;
+            --accent: #ff3e88;
+            --accent-glow: rgba(255, 62, 136, 0.4);
+            --glass: rgba(255, 255, 255, 0.03);
+            --text-main: #ffffff;
+            --text-dim: #a0a0a0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none; /* We'll use a custom cursor */
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            overflow: hidden; /* Controlled journey */
+            height: 100vh;
+        }
+
+        /* Custom Cursor */
+        #cursor {
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: difference;
+            transition: transform 0.1s ease;
+        }
+
+        /* Generative Background */
+        #canvas-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+
+        /* Layout Components */
+        .stage {
+            position: relative;
+            z-index: 10;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        /* Section Visibility */
+        section {
+            position: absolute;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        section.active {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: all;
+        }
+
+        /* Glass Cards */
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 3rem;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Typography */
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to right, #fff, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p {
+            font-size: 1.2rem;
+            color: var(--text-dim);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        /* Interaction Elements */
+        .btn {
+            background: white;
+            color: black;
+            border: none;
+            padding: 1.2rem 2.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 100px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: scale(1.05) translateY(-3px);
+            box-shadow: 0 10px 30px var(--accent-glow);
+            background: var(--accent);
+            color: white;
+        }
+
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 2rem;
+        }
+
+        .memory-item {
+            height: 100px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-style: italic;
+            font-size: 0.9rem;
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+        }
+
+        /* Gift Box Animation */
+        .gift-container {
+            cursor: pointer;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @media (max-width: 600px) {
+            .glass-card { padding: 1.5rem; }
+            .memory-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="cursor"></div>
+    <canvas id="canvas-bg"></canvas>
+
+    <main class="stage">
+        <div class="container">
+            
+            <!-- STEP 1: The Intro -->
+            <section id="step-1" class="active">
+                <div class="glass-card">
+                    <p style="letter-spacing: 5px; text-transform: uppercase; font-size: 0.8rem;">To a very special person</p>
+                    <h1>Today, the stars aligned.</h1>
+                    <p>There are 8 billion people on this planet, but this moment? This moment is just for you.</p>
+                    <button class="btn" onclick="nextStep(2)">Begin the Journey</button>
+                </div>
+            </section>
+
+            <!-- STEP 2: The Appreciation -->
+            <section id="step-2">
+                <div class="glass-card">
+                    <h1>You're Rare.</h1>
+                    <p>It's not just about another year. It's about the light you bring into every room and the way you make the world feel a bit more magical.</p>
+                    <div class="memory-grid">
+                        <div class="memory-item">The way you laugh</div>
+                        <div class="memory-item">Your incredible drive</div>
+                        <div class="memory-item">How you make me feel</div>
+                        <div class="memory-item">Your beautiful soul</div>
+                    </div>
+                    <button class="btn" onclick="nextStep(3)" style="margin-top: 2rem;">Continue</button>
+                </div>
+            </section>
+
+            <!-- STEP 3: The Interaction -->
+            <section id="step-3">
+                <div class="glass-card">
+                    <h1>A Little Something...</h1>
+                    <p>I couldn't wrap a cloud or bottle the stars, so I made this instead. Tap the gift to open it.</p>
+                    <div class="gift-container floating" onclick="revealBirthday()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="stroke: var(--accent); width: 100%; height: 100%;">
+                            <path d="M20 12v10H4V12"></path>
+                            <path d="M2 7h20v5H2z"></path>
+                            <path d="M12 22V7"></path>
+                            <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
+                            <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </section>
+
+            <!-- STEP 4: The Reveal -->
+            <section id="step-4">
+                <div class="glass-card">
+                    <h1 id="bday-text">Happy Birthday!</h1>
+                    <p id="personal-message">May your 2025 be as extraordinary and beautiful as you are. Keep shining, keep being you, and never forget how much you are appreciated.</p>
+                    <button class="btn" onclick="location.reload()">Replay the Magic</button>
+                    <div style="margin-top: 2rem; font-size: 0.8rem; color: var(--accent);">Made with ❤️ just for you</div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        // --- Custom Cursor ---
+        const cursor = document.getElementById('cursor');
+        document.addEventListener('mousemove', (e) => {
+            gsap.to(cursor, {
+                x: e.clientX,
+                y: e.clientY,
+                duration: 0.1
+            });
+        });
+
+        // --- Background Particle System ---
+        const canvas = document.getElementById('canvas-bg');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function initCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * 0.5 - 0.25;
+                this.alpha = Math.random() * 0.5 + 0.1;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x > canvas.width || this.x < 0 || this.y > canvas.height || this.y < 0) {
+                    this.reset();
+                }
+            }
+            draw() {
+                ctx.fillStyle = `rgba(255, 62, 136, ${this.alpha})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function createParticles() {
+            for (let i = 0; i < 150; i++) {
+                particles.push(new Particle());
+            }
+        }
+
+        function animateBackground() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateBackground);
+        }
+
+        window.addEventListener('resize', initCanvas);
+        initCanvas();
+        createParticles();
+        animateBackground();
+
+        // --- Navigation Logic ---
+        function nextStep(stepNumber) {
+            const current = document.querySelector('section.active');
+            const next = document.getElementById(`step-${stepNumber}`);
+
+            gsap.to(current, {
+                opacity: 0,
+                y: -20,
+                duration: 0.5,
+                onComplete: () => {
+                    current.classList.remove('active');
+                    next.classList.add('active');
+                    gsap.fromTo(next, 
+                        { opacity: 0, y: 20 }, 
+                        { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }
+                    );
+                }
+            });
+        }
+
+        function revealBirthday() {
+            // Trigger Confetti
+            var duration = 5 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            var interval = setInterval(function() {
+                var timeLeft = animationEnd - Date.now();
+                if (timeLeft <= 0) return clearInterval(interval);
+                var particleCount = 50 * (timeLeft / duration);
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+
+            nextStep(4);
+            
+            // Modern Text Animation for the Final Reveal
+            setTimeout(() => {
+                gsap.from("#bday-text", {
+                    scale: 0.5,
+                    opacity: 0,
+                    duration: 1,
+                    ease: "elastic.out(1, 0.3)"
+                });
+            }, 500);
+        }
+    </script>
+</body>
+</html>
